@@ -2,31 +2,28 @@ import os
 import requests
 import feedparser
 
-def analyser_avec_gpt(texte):
-    api_key = os.getenv('OPENAI_API_KEY')
-    url = "https://api.openai.com/v1/chat/completions"
+def analyser_avec_groq(texte):
+    api_key = os.getenv('GROQ_API_KEY')
+    url = "https://api.groq.com/openai/v1/chat/completions"
     
     headers = {
         "Authorization": f"Bearer {api_key}",
         "Content-Type": "application/json"
     }
     
-    # On utilise gpt-4o-mini : c'est le moins cher et le plus rapide
     payload = {
-        "model": "gpt-4o-mini",
+        "model": "llama3-8b-8192",
         "messages": [
-            {"role": "system", "content": "Tu es un expert business. Résume les news suivantes en une phrase percutante pour un entrepreneur."},
+            {"role": "system", "content": "Tu es un expert business. Résume les news suivantes en une phrase percutante en français."},
             {"role": "user", "content": texte}
-        ],
-        "temperature": 0.7
+        ]
     }
     
     try:
         response = requests.post(url, headers=headers, json=payload, timeout=15)
-        data = response.json()
-        return data['choices'][0]['message']['content']
-    except Exception as e:
-        return "L'IA GPT est indisponible. Vérifiez votre solde OpenAI."
+        return response.json()['choices'][0]['message']['content']
+    except:
+        return "L'analyse IA est indisponible pour le moment."
 
 def obtenir_donnees():
     # Météo et Crypto
@@ -39,14 +36,14 @@ def obtenir_donnees():
     flux = feedparser.parse(url_rss)
     titres = [entry.title for entry in flux.entries[:3]]
     
-    # Analyse ChatGPT
-    analyse_ia = analyser_avec_gpt(" | ".join(titres))
+    # Analyse Groq
+    analyse_ia = analyser_avec_groq(" | ".join(titres))
 
     return (
-        f"🚀 *RAPPORT ÉLITE (GPT)*\n\n"
+        f"🚀 *RAPPORT STRATÉGIQUE (IA GROQ)*\n\n"
         f"📍 {res_meteo}\n"
         f"💰 BTC: {prix_btc}\n\n"
-        f"🧠 *ANALYSE STRATÉGIQUE :*\n{analyse_ia}\n\n"
+        f"🧠 *L'ANALYSE DE L'IA :*\n{analyse_ia}\n\n"
         f"🔗 *SOURCE :* {titres[0]}"
     )
 
