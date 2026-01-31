@@ -33,13 +33,13 @@ def obtenir_donnees():
     # 3. Analyse Gemini
     analyse_ia = analyser_avec_gemini(" | ".join(titres))
 
-    return (
+        return (
         f"🚀 *RAPPORT INTELLIGENT*\n\n"
         f"📍 {res_meteo}\n"
         f"💰 BTC: {prix_btc:,} $\n\n"
-        f"📰 *L'essentiel :*\n{analyse_ia}\n\n"
-        f"🔗 *Sources :*\n1. {titres[0][:50]}...\n2. {titres[1][:50]}..."
-    )
+        f"💡 *L'analyse de Gemini :*\n{analyse_ia}\n\n"
+        f"🔗 *Sources complètes :*\n1. {titres[0]}\n2. {titres[1]}"
+        )
 
 def envoyer_telegram(message):
     token = os.getenv('TELEGRAM_TOKEN')
