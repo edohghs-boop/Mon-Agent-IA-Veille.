@@ -1,5 +1,8 @@
 name: Test-Final
-on: [workflow_dispatch]
+on:
+  workflow_dispatch:      # Pour pouvoir le lancer à la main
+  schedule:
+    - cron: '0 8 * * *'  # S'exécute automatiquement tous les jours à 8h00 UTC
 jobs:
   run-bot:
     runs-on: ubuntu-latest
