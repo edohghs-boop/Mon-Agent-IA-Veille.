@@ -2,38 +2,53 @@ import os
 import requests
 import feedparser
 
-def analyser_avec_gemini(texte):
-    api_key = os.getenv('GEMINI_API_KEY')
-    url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key={api_key}"
+def analyser_avec_gpt(texte):
+    api_key = os.getenv('OPENAI_API_KEY')
+    url = "https://api.openai.com/v1/chat/completions"
     
-    prompt = f"Résume en une phrase : {texte}"
-    payload = {"contents": [{"parts": [{"text": prompt}]}]}
+    headers = {
+        "Authorization": f"Bearer {api_key}",
+        "Content-Type": "application/json"
+    }
+    
+    # On utilise gpt-4o-mini : c'est le moins cher et le plus rapide
+    payload = {
+        "model": "gpt-4o-mini",
+        "messages": [
+            {"role": "system", "content": "Tu es un expert business. Résume les news suivantes en une phrase percutante pour un entrepreneur."},
+            {"role": "user", "content": texte}
+        ],
+        "temperature": 0.7
+    }
     
     try:
-        response = requests.post(url, json=payload, timeout=10)
+        response = requests.post(url, headers=headers, json=payload, timeout=15)
         data = response.json()
-        
-        # Si Google renvoie une erreur, on l'affiche clairement
-        if 'error' in data:
-            return f"❌ Erreur Google : {data['error']['message']}"
-            
-        return data['candidates'][0]['content']['parts'][0]['text']
+        return data['choices'][0]['message']['content']
     except Exception as e:
-        return f"❌ Problème technique : {str(e)}"
+        return "L'IA GPT est indisponible. Vérifiez votre solde OpenAI."
 
 def obtenir_donnees():
+    # Météo et Crypto
     res_meteo = requests.get("https://wttr.in/Zanguera?format=3&m").text.strip()
     res_crypto = requests.get("https://api.coingecko.com/api/v3/simple/price?ids=bitcoin&vs_currencies=usd").json()
     prix_btc = f"{res_crypto['bitcoin']['usd']:,} $"
 
+    # News
     url_rss = "https://news.google.com/rss/search?q=IA+tech+finance&hl=fr"
     flux = feedparser.parse(url_rss)
     titres = [entry.title for entry in flux.entries[:3]]
     
-    # On teste l'analyse
-    analyse_ia = analyser_avec_gemini(" | ".join(titres))
+    # Analyse ChatGPT
+    analyse_ia = analyser_avec_gpt(" | ".join(titres))
 
-    return f"🛠️ **TEST DIAGNOSTIC**\n\n📍 {res_meteo}\n💰 BTC: {prix_btc}\n\n🤖 **RÉPONSE IA :**\n{analyse_ia}"
+    return (
+        f"🚀 *RAPPORT ÉLITE (GPT)*\n\n"
+        f"📍 {res_meteo}\n"
+        f"💰 BTC: {prix_btc}\n\n"
+        f"🧠 *ANALYSE STRATÉGIQUE :*\n{analyse_ia}\n\n"
+        f"🔗 *SOURCE :* {titres[0]}"
+    )
 
 def envoyer_telegram(message):
     token = os.getenv('TELEGRAM_TOKEN')
